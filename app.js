@@ -2,6 +2,7 @@ require("dotenv").config();
 const inquirer = require("inquirer");
 const fs = require("fs");
 const mysql = require("mysql2");
+require("console.table");
 
 // create connection with db
 let connect = mysql.createConnection({
@@ -26,6 +27,7 @@ const menu = () => {
           "add a role",
           "add an employee",
           "update an employee role",
+          "exit",
         ],
       },
     ])
@@ -52,18 +54,38 @@ const menu = () => {
         case "update an employee role":
           updateRole();
           break;
+        default:
+          process.exit();
       }
     });
 };
 
 // choose departments
-const departments = () => {};
+const departments = () => {
+  connect.query("SELECT * FROM department;", (err, results) => {
+    console.table(results);
+    menu();
+  });
+};
 
 // choose roles
-const roles = () => {};
+const roles = () => {
+  connect.query("SELECT * FROM role;", (err, results) => {
+    console.table(results);
+    menu();
+  });
+};
 
 // choose employees
-const chooseEmployee = () => {};
+const chooseEmployee = () => {
+  connect.query(
+    "SELECT E.id, E.first_name, E.last_name, R.title, D.name AS department, R.salary, CONCAT(M.first_name,' ',M.last_name) AS manager FROM employee E JOIN role R ON E.role_id = R.id JOIN department D ON R.department_id = D.id LEFT JOIN employee M ON E.manager_id = M.id;",
+    (err, results) => {
+      console.table(results);
+      menu();
+    }
+  );
+};
 
 // make a new department
 const newDepartment = () => {};
